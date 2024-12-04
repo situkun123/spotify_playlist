@@ -4,8 +4,6 @@
 
 This project highlights Streamlit's new multipage app functionality. Now deployable directly to Railway!
 
-![In-use Animation](https://github.com/streamlit/hello/blob/main/mpa-hero.gif?raw=true "In-use Animation")
-
 ## How to run this project locally
 
 - pip install -r requirements.txt
