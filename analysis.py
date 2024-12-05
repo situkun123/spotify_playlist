@@ -105,15 +105,19 @@ def run():
 
         with col2:
             col_2_1, col_2_2 , col_2_3, col_2_4= st.columns(4)
+            select_list = ('streams_scaled', 'stream30s_scaled', 'monthly_stream30s_scaled', 'mau_both_months_scaled', 'dau_scaled', 'wau_scaled', 'skippers_scaled')
             with col_2_2:
-                streams = st.slider("weighted_streams_metric", min_value=df_main['weighted_streams_metric'].min(), max_value=df_main['weighted_streams_metric'].max(), value=1.0)
+                # streams = st.slider("weighted_streams_metric", min_value=df_main['weighted_streams_metric'].min(), max_value=df_main['weighted_streams_metric'].max(), value=1.0)
+                x_axis = st.selectbox("x axis",select_list)
             with col_2_3:
-                au = st.slider("weighted_au_metric", min_value=df_main['weighted_au_metric'].min(), max_value=df_main['weighted_au_metric'].max(), value=1.0)
-            df_main_processed = df_main[(df_main['weighted_au_metric'] <= au) & (df_main['weighted_streams_metric'] <= streams)]
+                # au = st.slider("weighted_au_metric", min_value=df_main['weighted_au_metric'].min(), max_value=df_main['weighted_au_metric'].max(), value=1.0)
+                y_axis = st.selectbox("y axis", select_list)
             with col_2_4:
-                st.write(f"Number of Playlists: \n {len(df_main_processed)}")
+                corr = round(df_main[x_axis].corr(df_main[y_axis]),3)
+                st.markdown(f"<div style='text-align: center;'>The correlation between {x_axis} and {y_axis} is {corr}</div>",unsafe_allow_html=True)
+            # df_main_processed = df_main[[x_axis, y_axis]]
             # middle figs -- scatter
-            scatter_chart =middle_scatter_chart(df_main_processed, 'weighted_au_metric', 'weighted_streams_metric', 'n_tracks', 'genre_1')
+            scatter_chart =middle_scatter_chart(df_main, x_axis, y_axis, 'n_tracks',  'genre_1')
 
             st.plotly_chart(scatter_chart, theme=None)
 
@@ -123,9 +127,35 @@ def run():
     # st.plotly_chart(df_genre_total_fig, theme=None)
     # st.plotly_chart(df_genre_avg, theme=None)
 
-    # detailed table
-    st.header("Detailed Table")
-    st.write(df_genre)
+    # bottom detailed table
+
+    st.header("Detailed Table (Top by weighted_streams_metric)")
+    bottom_container = st.container()
+    with bottom_container:
+        col1, col2 = st.columns([5,1])
+        with col2:
+            st.markdown("""
+                <style>
+                [role=radiogroup]{
+                    gap: 2rem;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+            tops_radio = st.radio(
+                label='Top by weighted_streams_metric',
+                options=["Top 10", "Top 50", "Top 100", "Top 1000"],
+                horizontal=False
+            )
+        with col1:
+            if tops_radio == "Top 10":
+                df_main_top_metric = df_main.sort_values('weighted_streams_metric', ascending=False).head(10)
+            elif tops_radio == "Top 50":
+                df_main_top_metric = df_main.sort_values('weighted_streams_metric', ascending=False).head(50)
+            elif tops_radio == "Top 100":
+                df_main_top_metric = df_main.sort_values('weighted_streams_metric', ascending=False).head(100)
+            elif tops_radio == "Top 1000":
+                df_main_top_metric = df_main.sort_values('weighted_streams_metric', ascending=False).head(1000)
+            st.dataframe(df_main_top_metric)
 
 
 if __name__ == "__main__":
